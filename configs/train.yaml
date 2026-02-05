@@ -1,0 +1,41 @@
+# Training configuration for Delivery Time Prediction Model
+# Override any value from CLI: python -m src.train --config configs/train.yaml --lr 1e-2
+
+# Random seed for reproducibility
+seed: 41  # Matching the notebook seed
+
+# Dataset
+dataset:
+  name: delivery_time
+  path: ./data/data_with_features.csv
+  split: [0.8, 0.1, 0.1]  # train, val, test
+
+# Training hyperparameters
+training:
+  epochs: 30000  
+  batch_size: 32
+  num_workers: 0  # set to 0 on macOS to avoid multiprocessing issues
+  learning_rate: 0.01  # SGD learning rate from notebook
+  weight_decay: 0.0  # No weight decay in the notebook
+
+# Model architecture
+model:
+  input_dim: 4  # distance, time_of_day, is_weekend, rush_hour
+  hidden_size_1: 64  # First hidden layer
+  hidden_size_2: 32  # Second hidden layer
+
+# Device and precision
+device: mps  # mps, cpu
+precision: fp32  # fp32, amp (automatic mixed precision)
+
+# Paths
+paths:
+  runs_dir: ./runs
+  checkpoints_dir: ./checkpoints
+  data_dir: ./data
+
+# Logging
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: json  # json, text
+  save_interval: 5000  # save metrics every N epochs 

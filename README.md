@@ -196,6 +196,46 @@ with torch.no_grad():
   - Checkpoint path (e.g., runs/<run>/checkpoints/best.pt)
   - Distance, time of day, and weekend flag
 
+### Run FastAPI Server
+
+Start the API server locally:
+
+```bash
+# First activate the virtual environment
+source .venv/bin/activate
+
+# Set required environment variables
+export MODEL_PATH="runs/<run_name>/checkpoints/best.pt"  # Required: Path to trained model
+export DATA_PATH="data/data_with_features.csv"            # Optional: Path to training data for normalization stats
+
+# Run the API server
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Required Environment Variables**:
+- `MODEL_PATH`: Path to trained checkpoint file (e.g., `runs/<run_name>/checkpoints/best.pt`)
+- `DATA_PATH`: Path to training data CSV for normalization statistics (defaults to `data/data_with_features.csv`)
+
+**Note**: You must train a model first using `train_delivery.py` before running the API server. The checkpoint file is created in the `runs/` directory after training.
+
+The API will be available at:
+- **API**: http://localhost:8000
+- **Interactive Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+**Endpoints**:
+- `GET /` - Root health check
+- `GET /health` - Detailed health check (model loaded, stats loaded)
+- `POST /predict` - Single prediction
+- `POST /predict/batch` - Batch predictions (up to 100 at once)
+
+**Example request**:
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"distance_miles": 5.5, "time_of_day_hours": 17.5, "is_weekend": 0}'
+```
+
 ## Development
 
 ### Running Tests

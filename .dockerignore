@@ -19,9 +19,9 @@ env/
 # Azure
 .azure/
 
-# Model checkpoints (include only best_model.pt)
+# Model checkpoints (include only best.pt)
 checkpoints/*
-!checkpoints/best_model.pt
+!checkpoints/best.pt
 
 # Logs
 *.log

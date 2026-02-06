@@ -9,7 +9,7 @@ from typing import Dict
 import pandas as pd
 import torch
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from src.model import create_delivery_model
 
@@ -31,18 +31,23 @@ TIME_STD = None
 class PredictionRequest(BaseModel):
     """Request model for prediction endpoint."""
 
-    distance_miles: float = Field(..., ge=0, le=20, description="Distance in miles (0-20)")
-    time_of_day_hours: float = Field(..., ge=8.0, le=20.0, description="Time in 24h format (8.0-20.0)")
+    distance_miles: float = Field(
+        ..., ge=0, le=20, description="Distance in miles (0-20)"
+    )
+    time_of_day_hours: float = Field(
+        ..., ge=8.0, le=20.0, description="Time in 24h format (8.0-20.0)"
+    )
     is_weekend: int = Field(..., ge=0, le=1, description="0=weekday, 1=weekend")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "distance_miles": 5.5,
                 "time_of_day_hours": 17.5,
                 "is_weekend": 0,
             }
         }
+    )
 
 
 class PredictionResponse(BaseModel):
@@ -76,7 +81,14 @@ async def load_model():
     global MODEL, DISTANCE_MEAN, DISTANCE_STD, TIME_MEAN, TIME_STD
 
     # Paths
-    model_path = Path(os.getenv("MODEL_PATH", "checkpoints/best_model.pt"))
+    model_path_env = os.getenv("MODEL_PATH")
+    if model_path_env is None:
+        raise RuntimeError(
+            "MODEL_PATH environment variable is not set. "
+            "Please set MODEL_PATH to a trained checkpoint, e.g. "
+            "`runs/<run_name>/checkpoints/best.pt`."
+        )
+    model_path = Path(model_path_env)
     data_path = Path(os.getenv("DATA_PATH", "data/data_with_features.csv"))
 
     # Load model
@@ -113,17 +125,13 @@ async def root() -> Dict[str, str]:
 
 
 @app.get("/health")
-async def health() -> Dict[str, str]:
+async def health() -> Dict[str, str | bool]:
     """Detailed health check."""
     return {
         "status": "healthy",
-        "model_loaded": "true" if MODEL is not None else "false",
-        "stats_loaded": (
-            "true"
-            if all(
-                x is not None for x in [DISTANCE_MEAN, DISTANCE_STD, TIME_MEAN, TIME_STD]
-            )
-            else "false"
+        "model_loaded": MODEL is not None,
+        "stats_loaded": all(
+            x is not None for x in [DISTANCE_MEAN, DISTANCE_STD, TIME_MEAN, TIME_STD]
         ),
     }
 
@@ -161,7 +169,7 @@ async def predict(request: PredictionRequest) -> PredictionResponse:
     )
 
 
-@app.post("/predict/batch")
+@app.post("/predict/batch", response_model=list[PredictionResponse])
 async def predict_batch(requests: list[PredictionRequest]) -> list[PredictionResponse]:
     """Batch prediction endpoint for multiple deliveries."""
     if MODEL is None:

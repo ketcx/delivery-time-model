@@ -71,6 +71,9 @@ echo "  ✓ Resource group created/verified"
 # Create Azure Container Registry
 echo -e "\n${GREEN}[4/6] Creating Azure Container Registry...${NC}"
 if ! az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP" &> /dev/null; then
+    # NOTE: --admin-enabled true creates long-lived credentials with broad access.
+    # For production deployments, prefer managed identity or scoped ACR tokens instead.
+    echo -e "${YELLOW}  Warning: Using admin credentials for ACR (not recommended for production)${NC}"
     az acr create \
         --name "$ACR_NAME" \
         --resource-group "$RESOURCE_GROUP" \
@@ -84,6 +87,8 @@ else
 fi
 
 # Get ACR credentials
+# NOTE: Retrieving passwords into shell variables can leak via process inspection/logging.
+# Consider using managed identity or token-based auth for production deployments.
 ACR_USERNAME=$(az acr credential show --name "$ACR_NAME" --query username -o tsv)
 ACR_PASSWORD=$(az acr credential show --name "$ACR_NAME" --query passwords[0].value -o tsv)
 ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --query loginServer -o tsv)

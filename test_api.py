@@ -1,7 +1,8 @@
 """Test script for local API testing before Azure deployment."""
 
-import requests
 import json
+
+import requests
 
 # API URL - change this after deployment
 API_URL = "http://localhost:8000"
@@ -10,7 +11,7 @@ API_URL = "http://localhost:8000"
 def test_health() -> None:
     """Test health endpoint."""
     print("Testing /health endpoint...")
-    response = requests.get(f"{API_URL}/health")
+    response = requests.get(f"{API_URL}/health", timeout=10)
     print(f"Status: {response.status_code}")
     print(f"Response: {json.dumps(response.json(), indent=2)}\n")
 
@@ -26,7 +27,7 @@ def test_single_prediction() -> None:
         "is_weekend": 0,
     }
 
-    response = requests.post(f"{API_URL}/predict", json=payload)
+    response = requests.post(f"{API_URL}/predict", json=payload, timeout=10)
     print(f"Status: {response.status_code}")
     print(f"Request: {json.dumps(payload, indent=2)}")
     print(f"Response: {json.dumps(response.json(), indent=2)}\n")
@@ -55,7 +56,7 @@ def test_batch_predictions() -> None:
         },  # Evening after rush
     ]
 
-    response = requests.post(f"{API_URL}/predict/batch", json=payloads)
+    response = requests.post(f"{API_URL}/predict/batch", json=payloads, timeout=10)
     print(f"Status: {response.status_code}")
     print(f"Request: {json.dumps(payloads, indent=2)}")
     print(f"Response: {json.dumps(response.json(), indent=2)}\n")
@@ -72,12 +73,12 @@ def test_validation_errors() -> None:
         "is_weekend": 0,
     }
 
-    response = requests.post(f"{API_URL}/predict", json=invalid_payload)
+    response = requests.post(f"{API_URL}/predict", json=invalid_payload, timeout=10)
     print(f"Status: {response.status_code}")
     print(f"Error response: {json.dumps(response.json(), indent=2)}\n")
 
 
-def main():
+def main() -> None:
     """Run all tests."""
     print("=" * 60)
     print("API Testing Script")

@@ -196,6 +196,36 @@ with torch.no_grad():
   - Checkpoint path (e.g., runs/<run>/checkpoints/best.pt)
   - Distance, time of day, and weekend flag
 
+### Run FastAPI Server
+
+Start the API server locally:
+
+```bash
+# First activate the virtual environment
+source .venv/bin/activate
+
+# Run the API server
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+The API will be available at:
+- **API**: http://localhost:8000
+- **Interactive Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+**Endpoints**:
+- `GET /` - Root health check
+- `GET /health` - Detailed health check (model loaded, stats loaded)
+- `POST /predict` - Single prediction
+- `POST /predict/batch` - Batch predictions (up to 100 at once)
+
+**Example request**:
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"distance_miles": 5.5, "time_of_day_hours": 17.5, "is_weekend": 0}'
+```
+
 ## Development
 
 ### Running Tests

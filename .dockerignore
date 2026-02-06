@@ -1,0 +1,35 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Azure
+.azure/
+
+# Model checkpoints (include only best_model.pt)
+checkpoints/*
+!checkpoints/best_model.pt
+
+# Logs
+*.log
+runs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore

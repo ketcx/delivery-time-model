@@ -2,7 +2,7 @@
 # Multi-stage build to keep final image small (~400MB vs ~2GB)
 
 # Stage 1: Builder
-FROM python:3.11-slim AS builder
+FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production (minimal)
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY src/ ./src/
 COPY app.py .
 COPY data/data_with_features.csv ./data/
-COPY checkpoints/ ./checkpoints/
+RUN mkdir -p checkpoints
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
